@@ -38,10 +38,22 @@ async def lifespan(_: FastAPI):
         task.cancel()
 
 
+def _cors_origins() -> list[str]:
+    """Allowed browser origins from CORS_ORIGINS. Tolerates spaces, quotes, trailing slashes and ';' separators."""
+    raw = os.environ.get("CORS_ORIGINS", "*")
+    out = []
+    for o in raw.replace(";", ",").replace(" ", ",").split(","):
+        o = o.strip().strip("\"'").rstrip("/")
+        if o:
+            out.append(o)
+    logging.getLogger("main").info("CORS allowed origins: %s", out)
+    return out or ["*"]
+
+
 app = FastAPI(title="Mono Edge Signal Analytics", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[o.strip() for o in os.environ.get("CORS_ORIGINS", "*").split(",")],
+    allow_origins=_cors_origins(),
     allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
