@@ -1,0 +1,28 @@
+# Render Blueprint: deploys the FastAPI backend from this repo.
+# Dashboard -> New -> Blueprint -> pick this repo. Secrets marked sync:false are asked for once.
+services:
+  - type: web
+    name: mono-edge-api
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.8
+      - key: DATABASE_URL          # Supabase SESSION POOLER string (IPv4, port 5432)
+        sync: false
+      - key: SUPABASE_URL          # https://<ref>.supabase.co  (used to verify user JWTs via JWKS)
+        sync: false
+      - key: SUPABASE_JWT_SECRET   # only needed if your project still signs HS256 (legacy secret)
+        sync: false
+      - key: CORS_ORIGINS          # your Vercel URL, e.g. https://mono-edge.vercel.app
+        sync: false
+      - key: INGEST_KEY            # shared secret for POST /api/ingest
+        generateValue: true
+      - key: LIVE_SIM              # 1 = built-in 20 ms live simulator feeding mill RM-03
+        value: "1"
+      - key: LIVE_MILL
+        value: RM-03

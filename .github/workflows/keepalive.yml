@@ -1,0 +1,15 @@
+# Render's free tier sleeps after ~15 min idle, which would pause the live simulator.
+# This pings /health every 10 minutes. Set the repository variable API_URL
+# (Settings -> Secrets and variables -> Actions -> Variables) to your Render URL.
+name: Keep API awake
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    if: ${{ vars.API_URL != '' }}
+    steps:
+      - run: curl -fsS --max-time 60 "${{ vars.API_URL }}/health"
