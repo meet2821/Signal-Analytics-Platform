@@ -5,9 +5,9 @@ A full-stack platform that turns high-frequency rolling-mill PLC data (6 correla
 
 | | |
 |---|---|
-| **Live app** | `https://<your-app>.vercel.app` |
-| **API** | `https://<your-api>.onrender.com` (`/docs` for the OpenAPI UI) |
-| **Demo login** | `reviewer@example.com` / `<password>` (fill in after creating the user) |
+| **Live app** | `https://signal-analytics-platform.vercel.app` |
+| **API** | `https://mono-edge-api.onrender.com` (`/docs` for the OpenAPI UI) |
+| **Demo login** | `monoedge@gmail.com` / `monoedge@1234` (fill in after creating the user) |
 
 ## What it does
 
