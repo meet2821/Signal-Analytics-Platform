@@ -16,6 +16,7 @@ type Props = {
   refLine?: { y: number; label?: string }; // e.g. normal average
   playhead?: number;
   compact?: boolean; // sparkline: no axes
+  onPan?: (deltaMs: number) => void; // drag or scroll over the chart to move through time
 };
 
 function niceTicks(lo: number, hi: number, n = 4): number[] {
@@ -39,12 +40,17 @@ export default function LineChart({
   refLine,
   playhead,
   compact = false,
+  onPan,
 }: Props) {
   const H = height;
   const m = compact ? { l: 4, r: 4, t: 4, b: 4 } : { l: 56, r: 14, t: 10, b: 24 };
   const [hover, setHover] = useState<number | null>(null);
   const [W, setW] = useState(800); // real pixel width so text is never stretched
   const boxRef = useRef<HTMLDivElement>(null);
+  const dragX = useRef<number | null>(null);
+  const panRef = useRef(onPan);
+  panRef.current = onPan;
+  const spanRef = useRef(1);
 
   useEffect(() => {
     const el = boxRef.current;
@@ -104,7 +110,42 @@ export default function LineChart({
     return { pts, x0, x1, lo, hi, sx, sy, d, area };
   }, [data, band, xDomain, refLine, H, compact, W]);
 
-  const onMove = (e: React.MouseEvent) => {
+  spanRef.current = g.x1 - g.x0;
+  const PLOT_PAD = 70; // left + right margins of the plot area
+
+  // wheel / trackpad scroll over the chart moves time (non-passive so the page does not scroll too)
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el || compact || !onPan) return;
+    const h = (e: WheelEvent) => {
+      const cb = panRef.current;
+      if (!cb) return;
+      e.preventDefault();
+      const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1;
+      const d = (Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY) * unit;
+      cb((d * spanRef.current) / Math.max(1, el.clientWidth - PLOT_PAD));
+    };
+    el.addEventListener("wheel", h, { passive: false });
+    return () => el.removeEventListener("wheel", h);
+  }, [compact, !!onPan]);
+
+  const onDown = (e: React.PointerEvent) => {
+    if (compact || !onPan) return;
+    dragX.current = e.clientX;
+    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+    setHover(null);
+  };
+  const endDrag = () => {
+    dragX.current = null;
+  };
+
+  const onMove = (e: React.PointerEvent) => {
+    if (dragX.current !== null && panRef.current && boxRef.current) {
+      const dx = e.clientX - dragX.current;
+      dragX.current = e.clientX;
+      panRef.current((-dx * spanRef.current) / Math.max(1, boxRef.current.clientWidth - PLOT_PAD));
+      return;
+    }
     if (compact || !g.pts.length || !boxRef.current) return;
     const r = boxRef.current.getBoundingClientRect();
     const px = ((e.clientX - r.left) / r.width) * W;
@@ -126,7 +167,15 @@ export default function LineChart({
   const xTicks = compact ? [] : [0, 0.25, 0.5, 0.75, 1].map((f) => g.x0 + f * (g.x1 - g.x0));
 
   return (
-    <div ref={boxRef} className="chart" onMouseMove={onMove} onMouseLeave={() => setHover(null)}>
+    <div
+      ref={boxRef}
+      className={`chart${onPan && !compact ? " pannable" : ""}`}
+      onPointerDown={onDown}
+      onPointerMove={onMove}
+      onPointerUp={endDrag}
+      onPointerCancel={endDrag}
+      onMouseLeave={() => setHover(null)}
+    >
       <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="img">
         {shades.map((s, i) => {
           const a = Math.max(g.sx(s.from), m.l);
@@ -194,7 +243,7 @@ export default function LineChart({
       </svg>
       {hp ? (
         <div className="tip" style={{ left: `${(g.sx(hp.t) / W) * 100}%` }}>
-          <div>{fmtTime(hp.t)} UTC</div>
+          <div>{fmtTime(hp.t)} IST</div>
           <b>
             {fmtNum(hp.avg)} {unit}
           </b>

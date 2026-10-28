@@ -61,7 +61,7 @@ export default function AlertsPage() {
         <table>
           <thead>
             <tr>
-              <th>Started (UTC)</th>
+              <th>Started (IST)</th>
               <th>Mill</th>
               <th>Severity</th>
               <th>Affected signals</th>

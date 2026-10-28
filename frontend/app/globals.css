@@ -83,3 +83,7 @@ tr.hl td { background: rgba(239,68,68,.07); }
 .cards > *, .grid2 > * { min-width: 0; }
 .user { margin-left: auto; flex-shrink: 0; white-space: nowrap; }
 .nav nav { min-width: 0; }
+
+/* charts that can be dragged / scrolled through time */
+.chart.pannable { cursor: grab; touch-action: pan-y; user-select: none; }
+.chart.pannable:active { cursor: grabbing; }

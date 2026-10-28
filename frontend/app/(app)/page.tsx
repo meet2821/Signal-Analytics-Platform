@@ -91,7 +91,7 @@ export default function Dashboard() {
       <div className="row between">
         <div>
           <h1>Live monitoring</h1>
-          <div className="muted">Select a mill and click a signal to inspect it. All times UTC.</div>
+          <div className="muted">Select a mill and click a signal to inspect it. All times IST (UTC+05:30).</div>
         </div>
         <label>
           Mill
@@ -249,6 +249,12 @@ function LiveView({ mill, startMs, feedRunning }: { mill: string; startMs: numbe
   const sliderValue = endMs ?? latestMs;
   const sliderMin = Math.min(Math.max(startMs, latestMs - 15 * 60_000), sliderValue);
   const stale = !viewing && (lagS > 20 || !feedRunning) && latestMs > 0;
+  // dragging / scrolling the chart: scroll forward = later. Reaching the newest data resumes following.
+  const pan = (dt: number) => {
+    if (!latestMs) return;
+    const next = Math.min(Math.max((endMs ?? latestMs) + dt, sliderMin), latestMs);
+    setEndMs(next >= latestMs - 1500 ? null : next);
+  };
 
   return (
     <>
@@ -338,7 +344,7 @@ function LiveView({ mill, startMs, feedRunning }: { mill: string; startMs: numbe
           }
         />
       ) : null}
-      <SignalBoard data={data} selected={sel} onSelect={setSel} shades={shades} xDomain={domain} />
+      <SignalBoard data={data} selected={sel} onSelect={setSel} shades={shades} xDomain={domain} onPan={pan} />
     </>
   );
 }
@@ -403,6 +409,10 @@ function ReplayView({ mill, range }: { mill: string; range: [number, number] }) 
     .filter((a) => a.from <= cursor && a.to >= lo)
     .map((a) => ({ from: a.from, to: Math.min(a.to, cursor), label: "alert" }));
   const firstAlert = alertTimes.slice().sort((a, b) => a.from - b.from)[0];
+  const pan = (dt: number) => {
+    setPlaying(false);
+    setCursor((c) => Math.min(Math.max(c + dt, Math.min(start + 10_000, end)), end));
+  };
 
   return (
     <>
@@ -450,7 +460,7 @@ function ReplayView({ mill, range }: { mill: string; range: [number, number] }) 
         ) : null}
       </div>
       <StatusBar status={active ? "ALERT" : "NORMAL"} alertId={active?.id} />
-      <SignalBoard data={windowed} selected={sel} onSelect={setSel} shades={shades} xDomain={[lo, cursor]} />
+      <SignalBoard data={windowed} selected={sel} onSelect={setSel} shades={shades} xDomain={[lo, cursor]} onPan={pan} />
     </>
   );
 }

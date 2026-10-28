@@ -96,7 +96,7 @@ export default function HistoryPage() {
   return (
     <>
       <h1>Historical analytics</h1>
-      <div className="muted">Explore stored readings by signal and time range. Times are UTC.</div>
+      <div className="muted">Explore stored readings by signal and time range. Times are IST (UTC+05:30).</div>
 
       <div className="row">
         <label>
@@ -120,11 +120,11 @@ export default function HistoryPage() {
           </select>
         </label>
         <label>
-          From (UTC)
+          From (IST)
           <input type="datetime-local" step={1} value={from} onChange={(e) => setFrom(e.target.value)} />
         </label>
         <label>
-          To (UTC)
+          To (IST)
           <input type="datetime-local" step={1} value={to} onChange={(e) => setTo(e.target.value)} />
         </label>
         <button

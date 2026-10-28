@@ -11,12 +11,14 @@ export default function SignalBoard({
   onSelect,
   shades,
   xDomain,
+  onPan,
 }: {
   data: Record<string, Pt[]>;
   selected: string;
   onSelect: (s: string) => void;
   shades: Shade[];
   xDomain: [number, number];
+  onPan?: (deltaMs: number) => void;
 }) {
   const meta = SIGNAL_META[selected];
   return (
@@ -45,6 +47,7 @@ export default function SignalBoard({
         <h3>
           {meta.label} <span className="muted">({meta.unit}) · 1 s average with min/max band</span>
         </h3>
+        {onPan ? <div className="muted small">Drag the chart, or scroll over it, to move through time.</div> : null}
         <LineChart
           data={data[selected] || []}
           unit={meta.unit}
@@ -53,6 +56,7 @@ export default function SignalBoard({
           band
           xDomain={xDomain}
           shades={shades}
+          onPan={onPan}
         />
       </section>
     </>
