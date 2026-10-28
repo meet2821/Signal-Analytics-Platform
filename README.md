@@ -9,6 +9,24 @@ A full-stack platform that turns high-frequency rolling-mill PLC data (6 correla
 | **API** | `https://mono-edge-api.onrender.com` (`/docs` for the OpenAPI UI) |
 | **Demo login** | `monoedge@gmail.com` / `monoedge@1234`|
 
+## Screenshots
+
+**Dashboard: a cobble detected in replay.** Six signals move together and the alert banner appears.
+
+![Dashboard with a cobble alert](docs/images/dashboard.png)
+
+**Alert history.** Every incident with its time, severity and reason.
+
+![Alerts list](docs/images/alerts.png)
+
+**Incident page.** Why the alert fired, normal versus abnormal values per signal, and raw 20 ms drill-down.
+
+![Incident page](docs/images/incident.png)
+
+**History.** Explore any signal over any time range.
+
+![History page](docs/images/history.png)
+
 ## What it does
 
 | Requirement | Where it lives |
@@ -21,6 +39,8 @@ A full-stack platform that turns high-frequency rolling-mill PLC data (6 correla
 | Incident exploration | `/alerts` history and `/alerts/<id>` per-incident page: all 6 signals around the event with the abnormal window shaded and the normal average as a reference line, a normal-vs-abnormal table, and raw 20 ms drill-down. |
 
 ## Architecture
+
+![Architecture diagram](docs/images/architecture.png)
 
 ```
                   every second: 50 samples x 6 signals
@@ -57,7 +77,7 @@ Severity is `critical` when ≥ 5 signals are involved. Re-running detection is 
 
 Simulated dataset (fixed seed, replayable): 10 minutes, 180,000 readings per mill.
 
-| Time (UTC, 2026-10-19) | Event | Alert? |
+| Time (IST, 2026-10-19) | Event | Alert? |
 |---|---|---|
 | 10:02:30 | +10 % speed step ramped over 20 s (legitimate) | no |
 | 10:05:00 | +18 % load step ramped over 15 s (legitimate) | no |
